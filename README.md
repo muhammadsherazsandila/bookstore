@@ -9,6 +9,16 @@ This project was built as part of my internship at **[DevelopersHub Corporation]
 
 ---
 
+## 📸 Screenshots
+
+### Login Screen
+![Login Page](images/login.png)
+
+### Dashboard (with Pagination & Stats)
+![Dashboard](images/dashboard.png)
+
+---
+
 ## ✨ Features
 
 - **Author Authentication** — Secure registration and login with JWT-based auth
