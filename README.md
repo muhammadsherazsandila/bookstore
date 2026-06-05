@@ -4,7 +4,7 @@ A modern, full-stack web application for authors to manage their book collection
 
 This project was built as part of my internship at **[DevelopersHub Corporation](https://www.linkedin.com/company/developershub-corporation/)**.
 
-> **Live Demo**: Coming soon  
+> **Live Demo**: [bookstore-by-sheraz.vercel.app](https://bookstore-by-sheraz.vercel.app)  
 > **Developer**: [Muhammad Sheraz](https://muhammadsheraz.dev)
 
 ---
