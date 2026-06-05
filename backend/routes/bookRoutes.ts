@@ -5,8 +5,8 @@ import {
   getBookByISBN,
   getBooks,
   updateBook,
-} from "../controllers/bookController.ts";
-import { protectedRoute } from "../middlewares/auth.ts";
+} from "../controllers/bookController.js";
+import { protectedRoute } from "../middlewares/auth.js";
 export const router = express.Router();
 
 router.post("/create-book", protectedRoute, createBook);

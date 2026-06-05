@@ -1,5 +1,5 @@
 import pgp from "pg-promise";
-import { env } from "./env.ts";
+import { env } from "./env.js";
 
 const pgpInit = pgp();
 const db = pgpInit(env.DATABASE_URL);

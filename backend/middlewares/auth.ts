@@ -1,4 +1,4 @@
-import { verifyToken } from "../utils/jwt.ts";
+import { verifyToken } from "../utils/jwt.js";
 export const protectedRoute = (req: any, res: any, next: any) => {
   try {
     const authHeader = req.headers.authorization;

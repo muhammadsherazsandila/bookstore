@@ -1,4 +1,4 @@
-import db from "../config/db.ts";
+import db from "../config/db.js";
 
 export const createBook = async (req: any, res: any) => {
   const { isbn, title, price, published_date } = req.body;

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { env } from "../config/env.ts";
+import { env } from "../config/env.js";
 
 export const generateToken = (authorEmail: string) => {
   return jwt.sign({ email: authorEmail }, env.JWT_SECRET, {

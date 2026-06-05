@@ -8,8 +8,8 @@ process.env.DATABASE_URL ??= "postgres://test:test@localhost:5432/bookstore_test
 process.env.JWT_SECRET = "test-secret";
 process.env.ORIGINS = "";
 
-const { app } = await import("../server.ts");
-const dbModule = await import("../config/db.ts");
+const { app } = await import("../server.js");
+const dbModule = await import("../config/db.js");
 const db = dbModule.default as any;
 
 type Author = {

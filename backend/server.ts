@@ -2,10 +2,10 @@ import cors from "cors";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { connectDatabase } from "./config/db.ts";
-import { env } from "./config/env.ts";
-import { router as authorRoutes } from "./routes/authorRoutes.ts";
-import { router as bookRoutes } from "./routes/bookRoutes.ts";
+import { connectDatabase } from "./config/db.js";
+import { env } from "./config/env.js";
+import { router as authorRoutes } from "./routes/authorRoutes.js";
+import { router as bookRoutes } from "./routes/bookRoutes.js";
 
 export const createApp = () => {
   const app = express();

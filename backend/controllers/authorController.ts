@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import db from "../config/db.ts";
-import { generateToken } from "../utils/jwt.ts";
+import db from "../config/db.js";
+import { generateToken } from "../utils/jwt.js";
 
 export const loginAuthor = async (req: any, res: any) => {
   const { email, password } = req.body;
