@@ -2,6 +2,8 @@
 
 A modern, full-stack web application for authors to manage their book collections. Built with a robust Express.js backend and a sleek React frontend featuring a premium dark-mode design.
 
+This project was built as part of my internship at **[DevelopersHub Corporation](https://www.linkedin.com/company/developershub-corporation/)**.
+
 > **Live Demo**: Coming soon  
 > **Developer**: [Muhammad Sheraz](https://muhammadsheraz.dev)
 
@@ -227,7 +229,8 @@ npm test
 ## 👨‍💻 Developer
 
 **Muhammad Sheraz**  
-🌐 [Portfolio](https://muhammadsheraz.dev)
+🌐 [Portfolio](https://muhammadsheraz.dev)  
+💼 Internship Project at [DevelopersHub Corporation](https://www.linkedin.com/company/developershub-corporation/)
 
 ---
 
