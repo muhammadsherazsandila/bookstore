@@ -168,6 +168,22 @@ const installFakeDb = () => {
 
     throw new Error(`Unhandled db.any query: ${sql}`);
   };
+
+  db.none = async (query: string, params: any[]) => {
+    const sql = normalizeSql(query);
+
+    if (sql.startsWith("DELETE FROM books WHERE author_email = $1")) {
+      const authorEmail = params[0];
+      for (const [isbn, book] of books.entries()) {
+        if (book.author_email === authorEmail) {
+          books.delete(isbn);
+        }
+      }
+      return;
+    }
+
+    throw new Error(`Unhandled db.none query: ${sql}`);
+  };
 };
 
 const request = async (
@@ -333,6 +349,25 @@ describe("author REST API", () => {
       },
     });
     assert.equal(authors.has("ada@example.com"), false);
+  });
+
+  it("deletes the authenticated author and all their books", async () => {
+    const { token } = await seedAuthor({
+      name: "Ada Lovelace",
+      email: "ada@example.com",
+    });
+    seedBook({ isbn: "9780000000001", author_email: "ada@example.com" });
+    seedBook({ isbn: "9780000000002", author_email: "ada@example.com" });
+
+    assert.equal(books.has("9780000000001"), true);
+    assert.equal(books.has("9780000000002"), true);
+
+    const response = await request("DELETE", "/api/authors/delete", { token });
+
+    assert.equal(response.status, 200);
+    assert.equal(authors.has("ada@example.com"), false);
+    assert.equal(books.has("9780000000001"), false);
+    assert.equal(books.has("9780000000002"), false);
   });
 });
 
