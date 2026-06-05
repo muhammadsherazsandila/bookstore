@@ -5,6 +5,8 @@ import { AxiosError } from "axios";
 
 const initialState: BooksState = {
   books: [],
+  pagination: null,
+  currentPage: 1,
   isLoading: false,
   error: null,
 };
@@ -13,9 +15,12 @@ const initialState: BooksState = {
 
 export const fetchBooks = createAsyncThunk(
   "books/fetchAll",
-  async (_, { rejectWithValue }) => {
+  async (
+    params: { page?: number; limit?: number } | undefined,
+    { rejectWithValue }
+  ) => {
     try {
-      return await bookService.getBooks();
+      return await bookService.getBooks(params?.page, params?.limit);
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       return rejectWithValue(
@@ -82,6 +87,11 @@ const booksSlice = createSlice({
     },
     clearBooks(state) {
       state.books = [];
+      state.pagination = null;
+      state.currentPage = 1;
+    },
+    changePage(state, action) {
+      state.currentPage = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -93,7 +103,8 @@ const booksSlice = createSlice({
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.books = action.payload;
+        state.books = action.payload.books;
+        state.pagination = action.payload.pagination;
       })
       .addCase(fetchBooks.rejected, (state, action) => {
         state.isLoading = false;
@@ -150,5 +161,5 @@ const booksSlice = createSlice({
   },
 });
 
-export const { clearBooksError, clearBooks } = booksSlice.actions;
+export const { clearBooksError, clearBooks, changePage } = booksSlice.actions;
 export default booksSlice.reducer;

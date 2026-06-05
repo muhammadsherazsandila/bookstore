@@ -20,11 +20,33 @@ export const createBook = async (req: any, res: any) => {
 
 export const getBooks = async (req: any, res: any) => {
   const author_email = req.author_email.email;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 6;
+  const offset = (page - 1) * limit;
+
   try {
-    const books = await db.any("SELECT * FROM books WHERE author_email = $1", [
-      author_email,
-    ]);
-    res.status(200).json({ books });
+    const statsResult = await db.one(
+      "SELECT COUNT(*)::int as count, COALESCE(SUM(price), 0)::float as total_value FROM books WHERE author_email = $1",
+      [author_email]
+    );
+    const totalBooks = statsResult.count;
+    const totalValue = statsResult.total_value;
+
+    const books = await db.any(
+      "SELECT * FROM books WHERE author_email = $1 ORDER BY created_at DESC, isbn ASC LIMIT $2 OFFSET $3",
+      [author_email, limit, offset]
+    );
+
+    res.status(200).json({
+      books,
+      pagination: {
+        totalBooks,
+        totalPages: Math.ceil(totalBooks / limit),
+        currentPage: page,
+        limit,
+        totalValue,
+      },
+    });
   } catch (error) {
     console.error("Get books error:", error);
     res.status(500).json({ message: "Server error" });

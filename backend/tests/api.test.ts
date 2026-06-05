@@ -96,6 +96,15 @@ const installFakeDb = () => {
       return book;
     }
 
+    if (sql.startsWith("SELECT COUNT(*)::int as count")) {
+      const filtered = Array.from(books.values()).filter(
+        (book) => book.author_email === params[0]
+      );
+      const count = filtered.length;
+      const total_value = filtered.reduce((sum, book) => sum + Number(book.price), 0);
+      return { count, total_value };
+    }
+
     throw new Error(`Unhandled db.one query: ${sql}`);
   };
 
@@ -161,9 +170,13 @@ const installFakeDb = () => {
     const sql = normalizeSql(query);
 
     if (sql.startsWith("SELECT * FROM books WHERE author_email = $1")) {
-      return Array.from(books.values()).filter(
+      const allBooks = Array.from(books.values()).filter(
         (book) => book.author_email === params[0],
       );
+      allBooks.sort((a, b) => a.isbn.localeCompare(b.isbn));
+      const limit = params[1] !== undefined ? params[1] : allBooks.length;
+      const offset = params[2] !== undefined ? params[2] : 0;
+      return allBooks.slice(offset, offset + limit);
     }
 
     throw new Error(`Unhandled db.any query: ${sql}`);
@@ -351,6 +364,20 @@ describe("author REST API", () => {
     assert.equal(authors.has("ada@example.com"), false);
   });
 
+  it("rejects registration with invalid email or short password", async () => {
+    const response = await request("POST", "/api/authors/register", {
+      body: {
+        name: "Test",
+        email: "not-an-email",
+        password: "123",
+      },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, "Validation failed");
+    assert.ok(response.body.errors.length > 0);
+  });
+
   it("deletes the authenticated author and all their books", async () => {
     const { token } = await seedAuthor({
       name: "Ada Lovelace",
@@ -530,5 +557,52 @@ describe("book REST API", () => {
       },
     });
     assert.equal(books.has("9780000000001"), false);
+  });
+
+  it("rejects creating a book with invalid details", async () => {
+    const { token } = await seedAuthor({ email: "ada@example.com" });
+
+    const response = await request("POST", "/api/books/create-book", {
+      token,
+      body: {
+        isbn: "",
+        title: "",
+        price: -10,
+        published_date: "invalid-date",
+      },
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.message, "Validation failed");
+    assert.ok(response.body.errors.length > 0);
+  });
+
+  it("paginates books returned for the authenticated author", async () => {
+    const { token } = await seedAuthor({ email: "ada@example.com" });
+    
+    // Seed 8 books
+    for (let i = 1; i <= 8; i++) {
+      seedBook({
+        isbn: `978000000000${i}`,
+        title: `Book ${i}`,
+        price: 10 + i,
+        published_date: "2026-06-05",
+        author_email: "ada@example.com",
+      });
+    }
+
+    // Fetch page 1 with limit 5
+    const response1 = await request("GET", "/api/books/get-books?page=1&limit=5", { token });
+    assert.equal(response1.status, 200);
+    assert.equal(response1.body.books.length, 5);
+    assert.equal(response1.body.pagination.totalBooks, 8);
+    assert.equal(response1.body.pagination.totalPages, 2);
+    assert.equal(response1.body.pagination.currentPage, 1);
+
+    // Fetch page 2 with limit 5
+    const response2 = await request("GET", "/api/books/get-books?page=2&limit=5", { token });
+    assert.equal(response2.status, 200);
+    assert.equal(response2.body.books.length, 3);
+    assert.equal(response2.body.pagination.currentPage, 2);
   });
 });

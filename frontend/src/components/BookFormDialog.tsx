@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { addBook, editBook } from "@/store/booksSlice";
+import { addBook, editBook, fetchBooks, changePage } from "@/store/booksSlice";
 import toast from "react-hot-toast";
 import type { Book } from "@/types";
 
@@ -24,7 +24,7 @@ interface BookFormDialogProps {
 
 export default function BookFormDialog({ open, onOpenChange, book }: BookFormDialogProps) {
   const dispatch = useAppDispatch();
-  const { isLoading } = useAppSelector((state) => state.books);
+  const { isLoading, currentPage } = useAppSelector((state) => state.books);
   const isEditing = Boolean(book);
 
   const [formData, setFormData] = useState({
@@ -88,6 +88,7 @@ export default function BookFormDialog({ open, onOpenChange, book }: BookFormDia
             },
           })
         ).unwrap();
+        dispatch(fetchBooks({ page: currentPage, limit: 6 }));
         toast.success("Book updated successfully!");
       } else {
         await dispatch(
@@ -98,6 +99,8 @@ export default function BookFormDialog({ open, onOpenChange, book }: BookFormDia
             published_date: formData.published_date,
           })
         ).unwrap();
+        dispatch(changePage(1));
+        dispatch(fetchBooks({ page: 1, limit: 6 }));
         toast.success("Book added successfully!");
       }
       onOpenChange(false);

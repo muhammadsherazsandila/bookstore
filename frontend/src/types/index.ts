@@ -54,8 +54,18 @@ export interface UpdateBookPayload {
   published_date: string;
 }
 
+export interface PaginationInfo {
+  totalBooks: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+  totalValue: number;
+}
+
 export interface BooksState {
   books: Book[];
+  pagination: PaginationInfo | null;
+  currentPage: number;
   isLoading: boolean;
   error: string | null;
 }
