@@ -15,13 +15,15 @@ import BookCard from "@/components/BookCard";
 import BookFormDialog from "@/components/BookFormDialog";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchBooks, removeBook } from "@/store/booksSlice";
+import { fetchBooks, removeBook, changePage } from "@/store/booksSlice";
 import toast from "react-hot-toast";
 import type { Book } from "@/types";
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
-  const { books, isLoading } = useAppSelector((state) => state.books);
+  const { books, pagination, currentPage, isLoading } = useAppSelector(
+    (state) => state.books
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [bookFormOpen, setBookFormOpen] = useState(false);
@@ -30,10 +32,10 @@ export default function DashboardPage() {
   const [deletingIsbn, setDeletingIsbn] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch books on mount
+  // Fetch books on mount or when page changes
   useEffect(() => {
-    dispatch(fetchBooks());
-  }, [dispatch]);
+    dispatch(fetchBooks({ page: currentPage, limit: 6 }));
+  }, [dispatch, currentPage]);
 
   // Filtered books
   const filteredBooks = useMemo(() => {
@@ -47,10 +49,7 @@ export default function DashboardPage() {
   }, [books, searchQuery]);
 
   // Stats
-  const totalValue = useMemo(
-    () => books.reduce((sum, book) => sum + Number(book.price), 0),
-    [books]
-  );
+  const totalValue = pagination?.totalValue ?? books.reduce((sum, book) => sum + Number(book.price), 0);
 
   const formattedTotal = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -76,6 +75,16 @@ export default function DashboardPage() {
       toast.success("Book deleted successfully");
       setDeleteConfirmOpen(false);
       setDeletingIsbn(null);
+
+      // Handle page shifting if current page becomes empty
+      const isPageEmpty = books.length === 1 && currentPage > 1;
+      const targetPage = isPageEmpty ? currentPage - 1 : currentPage;
+
+      if (isPageEmpty) {
+        dispatch(changePage(targetPage));
+      } else {
+        dispatch(fetchBooks({ page: targetPage, limit: 6 }));
+      }
     } catch (err) {
       toast.error(typeof err === "string" ? err : "Failed to delete book");
     } finally {
@@ -109,7 +118,7 @@ export default function DashboardPage() {
                     Total Books
                   </p>
                   <p className="text-2xl font-bold text-foreground">
-                    {books.length}
+                    {pagination?.totalBooks ?? books.length}
                   </p>
                 </div>
               </CardContent>
@@ -211,16 +220,64 @@ export default function DashboardPage() {
             </div>
           ) : (
             /* Book grid */
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredBooks.map((book, index) => (
-                <BookCard
-                  key={book.isbn}
-                  book={book}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                  index={index}
-                />
-              ))}
+            <div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredBooks.map((book, index) => (
+                  <BookCard
+                    key={book.isbn}
+                    book={book}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                    index={index}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {pagination && pagination.totalPages > 1 && (
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-t border-border/50 pt-6">
+                  <div className="text-sm text-muted-foreground">
+                    Showing page <span className="font-semibold text-foreground">{pagination.currentPage}</span> of{" "}
+                    <span className="font-semibold text-foreground">{pagination.totalPages}</span> (
+                    <span className="font-semibold text-foreground">{pagination.totalBooks}</span> books total)
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => dispatch(changePage(currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 transition-all duration-200"
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
+                        <Button
+                          key={p}
+                          variant={currentPage === p ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => dispatch(changePage(p))}
+                          className={`h-8 w-8 transition-all duration-200 ${
+                            currentPage === p ? "shadow-md shadow-primary/20" : ""
+                          }`}
+                        >
+                          {p}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => dispatch(changePage(currentPage + 1))}
+                      disabled={currentPage === pagination.totalPages}
+                      className="h-8 transition-all duration-200"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

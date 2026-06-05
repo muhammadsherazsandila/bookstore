@@ -1,10 +1,18 @@
 import api from "./api";
-import type { Book, CreateBookPayload, UpdateBookPayload } from "@/types";
+import type { Book, CreateBookPayload, UpdateBookPayload, PaginationInfo } from "@/types";
 
 export const bookService = {
-  async getBooks(): Promise<Book[]> {
-    const response = await api.get<{ books: Book[] }>("/api/books/get-books");
-    return response.data.books;
+  async getBooks(
+    page?: number,
+    limit?: number
+  ): Promise<{ books: Book[]; pagination: PaginationInfo }> {
+    const response = await api.get<{ books: Book[]; pagination: PaginationInfo }>(
+      "/api/books/get-books",
+      {
+        params: { page, limit },
+      }
+    );
+    return response.data;
   },
 
   async getBookByISBN(isbn: string): Promise<Book> {
