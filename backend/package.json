@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "test": "node tests/api.test.ts",
-    "build": "tsc",
+    "build": "npm install && tsc && npm run migrate:up",
     "dev": "tsx --watch server.ts",
     "start": "node dist/server.js",
     "migrate:create": "node-pg-migrate create",
