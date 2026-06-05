@@ -50,6 +50,23 @@ export const registerAuthor = createAsyncThunk(
   }
 );
 
+export const deleteAuthorAccount = createAsyncThunk(
+  "auth/deleteAccount",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await authService.deleteAccount();
+      localStorage.removeItem("token");
+      localStorage.removeItem("author");
+      return data;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      return rejectWithValue(
+        axiosError.response?.data?.message || "Failed to delete account. Please try again."
+      );
+    }
+  }
+);
+
 // ─── Slice ───────────────────────────────────────────────────────────────────
 
 const authSlice = createSlice({
@@ -96,6 +113,22 @@ const authSlice = createSlice({
         state.token = action.payload.token;
       })
       .addCase(registerAuthor.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Delete Account
+    builder
+      .addCase(deleteAuthorAccount.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteAuthorAccount.fulfilled, (state) => {
+        state.isLoading = false;
+        state.author = null;
+        state.token = null;
+      })
+      .addCase(deleteAuthorAccount.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

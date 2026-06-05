@@ -56,6 +56,12 @@ export const registerAuthor = async (req: any, res: any) => {
 export const deleteAuthor = async (req: any, res: any) => {
   const author_email = req.author_email;
   try {
+    // 1. Delete all books of the author first (since books depend on the author)
+    await db.none("DELETE FROM books WHERE author_email = $1", [
+      author_email.email,
+    ]);
+
+    // 2. Delete the author
     const deletedAuthor = await db.oneOrNone(
       "DELETE FROM authors WHERE email = $1 RETURNING name, email",
       [author_email.email],
