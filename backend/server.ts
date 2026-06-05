@@ -1,27 +1,51 @@
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { connectDatabase } from "./config/db.ts";
-dotenv.config();
-export const app = express();
+import { env } from "./config/env.ts";
+import { router as authorRoutes } from "./routes/authorRoutes.ts";
+import { router as bookRoutes } from "./routes/bookRoutes.ts";
 
-// use required middleware
-const allowedOrigins: string[] = process.env.ORIGINS?.split(",") || [];
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  }),
-);
-app.use(express.json());
-connectDatabase();
-app.listen(process.env.PORT || 3000, () => {
-  console.log(
-    `Server is running on http://localhost:${process.env.PORT || 3000}`,
+export const createApp = () => {
+  const app = express();
+
+  // use required middleware
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || env.ORIGINS.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
+    }),
   );
-});
+  app.use(express.json());
+
+  // use routes
+  app.use("/api/authors", authorRoutes);
+  app.use("/api/books", bookRoutes);
+
+  return app;
+};
+
+export const app = createApp();
+
+export const startServer = () => {
+  connectDatabase();
+
+  return app.listen(env.PORT, () => {
+    console.log(`Server is running on http://localhost:${env.PORT}`);
+  });
+};
+
+const currentFile = path.normalize(fileURLToPath(import.meta.url));
+const entryFile = process.argv[1]
+  ? path.normalize(path.resolve(process.argv[1]))
+  : "";
+
+if (entryFile && currentFile.toLowerCase() === entryFile.toLowerCase()) {
+  startServer();
+}

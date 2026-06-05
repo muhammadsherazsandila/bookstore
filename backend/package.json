@@ -4,10 +4,13 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node tests/api.test.ts",
     "build": "tsc",
     "dev": "tsx --watch server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "migrate:create": "node-pg-migrate create",
+    "migrate:up": "dotenv -- node-pg-migrate up",
+    "migrate:down": "dotenv -- node-pg-migrate down"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +22,8 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
+    "@types/node-pg-migrate": "^2.3.1",
+    "dotenv-cli": "^11.0.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3"
   },

@@ -1,0 +1,48 @@
+{
+  "project Name": "Bookstore",
+  "backend": {
+    "language": "TypeScript",
+    "framework": "Express",
+    "database": "PostgreSQL",
+    "orm": "pg-promise",
+    "status": "Completed"
+  },
+  "frontend": {
+    "language": "TypeScript",
+    "framework": "React",
+    "stateManagement": "Redux",
+    "UI Library": "Shadcn UI",
+    "Styling": "Tailwind CSS",
+    "Icons": "Lucide Icons",
+    "status": "In Progress",
+    "todo": [
+      {
+        "pages": ["login | register page", "dashboard page"]
+      },
+      {
+        "connection": [
+          "backendURL : http://localhost:3000",
+          "use dotenv to manage environment variables for backend URL",
+          "use environment variables for frontend URL"
+        ]
+      },
+      {
+        "Important": "Frontend Design should be responsive and user-friendly, ensuring a seamless experience across devices. It should be visually appealing and easy to navigate, allowing Authors to effortlessly browse and manage their book collections. The design should be modern."
+      },
+      {
+        "Testing": "Implement unit tests for frontend components and integration tests to ensure the overall functionality of the application. Use testing libraries such as Jest and React Testing Library to create comprehensive test suites that cover various scenarios and edge cases."
+      }
+    ]
+  },
+  "repository": {
+    "todo": "Create a GitHub repository for the frontend codebase, ensuring proper version control and collaboration. Include a README file with clear instructions on how to set up and run the frontend application, as well as any necessary dependencies or configurations.",
+    "tool": "use gitHub MCP to manage the repository and track changes effectively. This will facilitate collaboration among team members and allow for efficient code management throughout the development process.",
+    "name": "bookstore"
+  },
+  "developer": {
+    "portfolio": "https://muhammadsheraz.dev"
+  },
+  "readme": {
+    "todo": "Create a comprehensive README file for the project, providing an overview of the application, its features, and how to set it up and run it. Include instructions for both the backend and frontend components, as well as any necessary dependencies or configurations. The README should also include information about the project's architecture, technologies used, and any relevant documentation or resources for further reference. Also include developer's portfolio link in the README file to showcase their work and provide additional context about their skills and experience."
+  }
+}

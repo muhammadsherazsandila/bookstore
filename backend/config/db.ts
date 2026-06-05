@@ -1,9 +1,8 @@
-import dotenv from "dotenv";
 import pgp from "pg-promise";
-dotenv.config();
-const DB_URI: any = process.env.DB_URI;
+import { env } from "./env.ts";
+
 const pgpInit = pgp();
-const db = pgpInit(DB_URI);
+const db = pgpInit(env.DATABASE_URL);
 export const connectDatabase = () =>
   db
     .connect()
