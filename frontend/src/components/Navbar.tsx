@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { BookOpen, LogOut, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BookOpen, LayoutDashboard, LogIn, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout, deleteAuthorAccount } from "@/store/authSlice";
@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 export default function Navbar() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { author } = useAppSelector((state) => state.auth);
+  const { author, token } = useAppSelector((state) => state.auth);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -53,32 +53,57 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
+            <Button asChild variant="ghost" size="sm" className="gap-2">
+              <Link to="/">
+                <BookOpen className="h-4 w-4" />
+                <span className="hidden sm:inline">Catalog</span>
+              </Link>
+            </Button>
+            {token && (
+              <Button asChild variant="ghost" size="sm" className="gap-2">
+                <Link to="/dashboard">
+                  <LayoutDashboard className="h-4 w-4" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Link>
+              </Button>
+            )}
             {author && (
               <span className="hidden text-sm text-muted-foreground sm:inline-block">
                 Hello,{" "}
                 <span className="font-medium text-foreground">{author.name}</span>
               </span>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setDeleteConfirmOpen(true)}
-              className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
-              id="delete-account-button"
-            >
-              <Trash2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Delete Account</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-2 text-muted-foreground hover:text-foreground"
-              id="logout-button"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
+            {token ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
+                  id="delete-account-button"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Delete Account</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-2 text-muted-foreground hover:text-foreground"
+                  id="logout-button"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                </Button>
+              </>
+            ) : (
+              <Button asChild variant="ghost" size="sm" className="gap-2">
+                <Link to="/login">
+                  <LogIn className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>

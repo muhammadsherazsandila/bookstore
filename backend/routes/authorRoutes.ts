@@ -1,8 +1,11 @@
 import express from "express";
 import {
   deleteAuthor,
+  getPublicAuthorByEmail,
+  getPublicAuthors,
   loginAuthor,
   registerAuthor,
+  updateProfile,
 } from "../controllers/authorController.js";
 import { protectedRoute } from "../middlewares/auth.js";
 import {
@@ -13,6 +16,8 @@ import {
 
 export const router = express.Router();
 
+router.get("/", getPublicAuthors);
+router.get("/:email", getPublicAuthorByEmail);
 router.post(
   "/register",
   registerValidationRules,
@@ -25,4 +30,5 @@ router.post(
   handleValidationErrors,
   loginAuthor
 );
+router.put("/profile", protectedRoute, updateProfile);
 router.delete("/delete", protectedRoute, deleteAuthor);

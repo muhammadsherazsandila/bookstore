@@ -16,6 +16,7 @@ type Author = {
   name: string;
   email: string;
   password: string;
+  role: "author" | "user";
 };
 
 type Book = {
@@ -28,6 +29,7 @@ type Book = {
 
 const authors = new Map<string, Author>();
 const books = new Map<string, Book>();
+const savedBooks = new Map<string, Set<string>>();
 
 let server: http.Server;
 let baseUrl = "";
@@ -40,17 +42,20 @@ const tokenFor = (email: string) =>
 const publicAuthor = (author: Author) => ({
   name: author.name,
   email: author.email,
+  role: author.role,
 });
 
 const seedAuthor = async ({
   name = "Test Author",
   email = "author@example.com",
   password = "password123",
+  role = "author" as const,
 } = {}) => {
   const author = {
     name,
     email,
     password: await bcrypt.hash(password, 10),
+    role,
   };
 
   authors.set(email, author);
@@ -79,8 +84,8 @@ const installFakeDb = () => {
     const sql = normalizeSql(query);
 
     if (sql.startsWith("INSERT INTO authors")) {
-      const [name, email, password] = params;
-      const author = { name, email, password };
+      const [name, email, password, role = "author"] = params;
+      const author = { name, email, password, role };
       authors.set(email, author);
       return publicAuthor(author);
     }
@@ -97,6 +102,10 @@ const installFakeDb = () => {
     }
 
     if (sql.startsWith("SELECT COUNT(*)::int as count")) {
+      if (sql === "SELECT COUNT(*)::int as count FROM books") {
+        return { count: books.size };
+      }
+
       const filtered = Array.from(books.values()).filter(
         (book) => book.author_email === params[0]
       );
@@ -115,6 +124,20 @@ const installFakeDb = () => {
       return authors.get(params[0]) ?? null;
     }
 
+    if (sql.startsWith("SELECT name, email, role FROM authors WHERE email = $1")) {
+      const author = authors.get(params[0]);
+      if (!author) return null;
+      if (sql.includes("role = 'author'") && author.role !== "author") {
+        return null;
+      }
+      return publicAuthor(author);
+    }
+
+    if (sql.startsWith("SELECT isbn FROM books WHERE isbn = $1")) {
+      const book = books.get(params[0]);
+      return book ? { isbn: book.isbn } : null;
+    }
+
     if (sql.startsWith("DELETE FROM authors WHERE email = $1")) {
       const author = authors.get(params[0]);
       if (!author) {
@@ -122,6 +145,7 @@ const installFakeDb = () => {
       }
 
       authors.delete(params[0]);
+      savedBooks.delete(params[0]);
       for (const [isbn, book] of books.entries()) {
         if (book.author_email === params[0]) {
           books.delete(isbn);
@@ -179,6 +203,40 @@ const installFakeDb = () => {
       return allBooks.slice(offset, offset + limit);
     }
 
+    if (sql.startsWith("SELECT b.*, a.name as author_name FROM books b JOIN authors a")) {
+      let allBooks = Array.from(books.values());
+      if (sql.includes("WHERE b.author_email = $1")) {
+        allBooks = allBooks.filter((book) => book.author_email === params[0]);
+      }
+      return allBooks.map((book) => ({
+        ...book,
+        author_name: authors.get(book.author_email)?.name,
+      }));
+    }
+
+    if (sql.startsWith("SELECT a.name, a.email, a.role")) {
+      return Array.from(authors.values())
+        .filter((author) => author.role === "author")
+        .map((author) => ({
+          ...publicAuthor(author),
+          book_count: Array.from(books.values()).filter(
+            (book) => book.author_email === author.email,
+          ).length,
+        }));
+    }
+
+    if (sql.startsWith("SELECT b.*, a.name as author_name, sb.created_at as saved_at")) {
+      const userSaved = savedBooks.get(params[0]) ?? new Set<string>();
+      return Array.from(userSaved)
+        .map((isbn) => books.get(isbn))
+        .filter((book): book is Book => Boolean(book))
+        .map((book) => ({
+          ...book,
+          author_name: authors.get(book.author_email)?.name,
+          saved_at: "2026-06-10",
+        }));
+    }
+
     throw new Error(`Unhandled db.any query: ${sql}`);
   };
 
@@ -192,6 +250,24 @@ const installFakeDb = () => {
           books.delete(isbn);
         }
       }
+      return;
+    }
+
+    if (sql.startsWith("DELETE FROM saved_books WHERE user_email = $1 AND isbn = $2")) {
+      savedBooks.get(params[0])?.delete(params[1]);
+      return;
+    }
+
+    if (sql.startsWith("DELETE FROM saved_books WHERE user_email = $1")) {
+      savedBooks.delete(params[0]);
+      return;
+    }
+
+    if (sql.startsWith("INSERT INTO saved_books")) {
+      const [userEmail, isbn] = params;
+      const userSaved = savedBooks.get(userEmail) ?? new Set<string>();
+      userSaved.add(isbn);
+      savedBooks.set(userEmail, userSaved);
       return;
     }
 
@@ -247,6 +323,7 @@ after(async () => {
 beforeEach(() => {
   authors.clear();
   books.clear();
+  savedBooks.clear();
 });
 
 describe("author REST API", () => {
@@ -263,6 +340,7 @@ describe("author REST API", () => {
     assert.deepEqual(response.body.author, {
       name: "Ada Lovelace",
       email: "ada@example.com",
+      role: "author",
     });
     assert.equal(typeof response.body.token, "string");
 
@@ -305,6 +383,7 @@ describe("author REST API", () => {
     assert.deepEqual(response.body.author, {
       name: "Ada Lovelace",
       email: "ada@example.com",
+      role: "author",
     });
     assert.equal(typeof response.body.token, "string");
   });
@@ -359,6 +438,7 @@ describe("author REST API", () => {
       author: {
         name: "Ada Lovelace",
         email: "ada@example.com",
+        role: "author",
       },
     });
     assert.equal(authors.has("ada@example.com"), false);
