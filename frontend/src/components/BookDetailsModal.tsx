@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useAppSelector } from "@/store/hooks";
 import { featuresService } from "@/services/featuresService";
+import { bookService } from "@/services/bookService";
 import type { Book, Review, Playlist } from "@/types";
-import { Heart, Star, MessageSquare, Plus, Trash2, Calendar, DollarSign, ListPlus } from "lucide-react";
+import { Heart, Star, MessageSquare, Trash2, Calendar, DollarSign, ListPlus } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface BookDetailsModalProps {
@@ -46,13 +45,7 @@ export default function BookDetailsModal({
       setIsLoading(true);
       try {
         const [bookData, reviewData] = await Promise.all([
-          featuresService.getLikes(isbn).then((likeData) =>
-            // Fallback: we fetch detail or use likeInfo
-            // Wait, we have a public getBookByISBN we can use
-            import("@/services/bookService").then(({ bookService }) =>
-              bookService.getPublicBookByISBN(isbn)
-            )
-          ),
+          bookService.getPublicBookByISBN(isbn),
           featuresService.getReviews(isbn),
         ]);
         setBook(bookData);

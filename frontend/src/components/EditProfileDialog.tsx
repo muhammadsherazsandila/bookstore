@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { featuresService } from "@/services/featuresService";
-import { loginAuthor } from "@/store/authSlice"; // We can update author state in local store
+import { setAuthor } from "@/store/authSlice";
 import toast from "react-hot-toast";
 
 interface EditProfileDialogProps {
@@ -57,13 +57,7 @@ export default function EditProfileDialog({
       });
 
       // Update in Redux
-      const token = localStorage.getItem("token") || "";
-      dispatch(
-        loginAuthor({
-          author: updatedAuthor,
-          token,
-        })
-      );
+      dispatch(setAuthor(updatedAuthor));
 
       // Save to localStorage as well
       localStorage.setItem("author", JSON.stringify(updatedAuthor));

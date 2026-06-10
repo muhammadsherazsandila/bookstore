@@ -14,14 +14,11 @@ import {
   UserRound,
   Users,
   Heart,
-  MessageSquare,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { authService } from "@/services/authService";
 import { bookService } from "@/services/bookService";
 import { useAppSelector } from "@/store/hooks";
