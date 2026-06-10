@@ -18,6 +18,10 @@ export const registerValidationRules = [
   body("password")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters long"),
+  body("role")
+    .optional()
+    .isIn(["author", "user"])
+    .withMessage("Role must be either author or user"),
 ];
 
 export const loginValidationRules = [

@@ -38,6 +38,16 @@ export default function BookCard({ book, onEdit, onDelete, index = 0 }: BookCard
       {/* Subtle gradient accent at top */}
       <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
+      {book.cover_image && (
+        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+          <img
+            src={book.cover_image}
+            alt={`${book.title} cover`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      )}
+
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <CardTitle className="line-clamp-2 text-base font-semibold leading-snug">
@@ -66,7 +76,10 @@ export default function BookCard({ book, onEdit, onDelete, index = 0 }: BookCard
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onEdit(book)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(book);
+          }}
           className="h-8 w-8 text-muted-foreground hover:text-primary"
           aria-label={`Edit ${book.title}`}
           id={`edit-book-${book.isbn}`}
@@ -76,7 +89,10 @@ export default function BookCard({ book, onEdit, onDelete, index = 0 }: BookCard
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onDelete(book.isbn)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(book.isbn);
+          }}
           className="h-8 w-8 text-muted-foreground hover:text-destructive"
           aria-label={`Delete ${book.title}`}
           id={`delete-book-${book.isbn}`}

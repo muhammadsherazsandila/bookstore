@@ -6,6 +6,7 @@ import { connectDatabase } from "./config/db.js";
 import { env } from "./config/env.js";
 import { router as authorRoutes } from "./routes/authorRoutes.js";
 import { router as bookRoutes } from "./routes/bookRoutes.js";
+import { router as collectionRoutes } from "./routes/collectionRoutes.js";
 
 export const createApp = () => {
   const app = express();
@@ -27,6 +28,15 @@ export const createApp = () => {
   // use routes
   app.use("/api/authors", authorRoutes);
   app.use("/api/books", bookRoutes);
+  app.use("/api/collections", collectionRoutes);
+
+  app.use((error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (error.message === "Not allowed by CORS") {
+      return res.status(403).json({ message: "Not allowed by CORS" });
+    }
+
+    next(error);
+  });
 
   return app;
 };

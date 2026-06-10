@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { BookOpen, Mail, Lock, Loader2, Eye, EyeOff, User } from "lucide-react";
+import { BookOpen, Mail, Lock, Loader2, Eye, EyeOff, User, PenTool, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<"author" | "user">("user");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -61,7 +62,7 @@ export default function RegisterPage() {
 
     try {
       const result = await dispatch(
-        registerAuthor({ name: name.trim(), email: email.trim(), password })
+        registerAuthor({ name: name.trim(), email: email.trim(), password, role })
       ).unwrap();
       toast.success(`Account created! Welcome, ${result.author.name}!`);
     } catch (err) {
@@ -97,7 +98,7 @@ export default function RegisterPage() {
             Create Account
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Join the community of authors
+            Join as a reader or publish as an author
           </CardDescription>
         </CardHeader>
 
@@ -153,6 +154,31 @@ export default function RegisterPage() {
               {validationErrors.email && (
                 <p className="text-xs text-destructive">{validationErrors.email}</p>
               )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <Label>Account type</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={role === "user" ? "default" : "outline"}
+                  onClick={() => setRole("user")}
+                  className="h-auto justify-start gap-2 py-3"
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Reader
+                </Button>
+                <Button
+                  type="button"
+                  variant={role === "author" ? "default" : "outline"}
+                  onClick={() => setRole("author")}
+                  className="h-auto justify-start gap-2 py-3"
+                >
+                  <PenTool className="h-4 w-4" />
+                  Author
+                </Button>
+              </div>
             </div>
 
             {/* Password */}
